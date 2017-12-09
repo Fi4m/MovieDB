@@ -7,6 +7,7 @@ target 'MovieDB' do
 
 	pod ‘MBProgressHUD’
 	pod ‘Kingfisher’
+	pod ‘SWRevealViewController’
 
   # Pods for MovieDB
 

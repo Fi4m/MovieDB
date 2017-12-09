@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SWRevealViewController
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,9 +19,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         window = UIWindow()
-        let destination = MoviePosterListingCVCtrlr(collectionViewLayout: UICollectionViewFlowLayout())
-        let navigationController = UINavigationController(rootViewController: destination)
-        window?.rootViewController = navigationController
+        
+        let revealViewController = SWRevealViewController()
+        let moviePosterListingCVCtrlr = MoviePosterListingCVCtrlr(collectionViewLayout: UICollectionViewFlowLayout())
+        let navigationController = UINavigationController(rootViewController: moviePosterListingCVCtrlr)
+        navigationController.navigationBar.tintColor = .black
+        navigationController.navigationBar.prefersLargeTitles = true
+        navigationController.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.black]
+        revealViewController.setFront(navigationController, animated: false)
+        let sortTypeTVCrtlr = SortTypeSelectionTVCtrlr()
+        sortTypeTVCrtlr.refreshMovieListingDelegate = moviePosterListingCVCtrlr
+        revealViewController.setRight(sortTypeTVCrtlr, animated: false)
+        window?.rootViewController = revealViewController
         window?.makeKeyAndVisible()
         
         return true

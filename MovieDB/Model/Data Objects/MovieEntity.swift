@@ -18,7 +18,7 @@ struct MovieEntity: DataObjectsInitializer {
     let description: String
     let imgPosterURL: String?
     let userRating: Double
-    let releaseDate: Date
+    let releaseDate: Date?
     
     init(_ dict: [String:Any]) {
         title = dict["original_title"] as! String
@@ -28,7 +28,7 @@ struct MovieEntity: DataObjectsInitializer {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
-        releaseDate = dateFormatter.date(from: dict["release_date"] as! String)!
+        releaseDate = dateFormatter.date(from: dict["release_date"] as! String)
     }
     
 }

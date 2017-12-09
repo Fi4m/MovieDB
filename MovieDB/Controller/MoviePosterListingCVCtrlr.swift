@@ -7,97 +7,144 @@
 //
 
 import UIKit
+import SWRevealViewController
+
+protocol RefreshMovieListingDelegate {
+    func callListOfMovies(withParameters params: [String:Any?])
+}
 
 class MoviePosterListingCVCtrlr: UICollectionViewController {
     
     var listMovies = [MovieEntity]()
+    var parameters = [String:Any]()
+    var txtSearch: UITextField!
+    var retainedTitleView: UIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
+        navigationItem.title = "MovieDB"
+        retainedTitleView = navigationItem.titleView
+        navigationItem.hidesSearchBarWhenScrolling = true
+//        navigationItem.searchController = UISearchController()
         // Register cell classes
-        
         self.collectionView!.register(UINib(nibName: "MoviePosterCVCell", bundle: nil), forCellWithReuseIdentifier: "MoviePosterCVCell")
 
         // Do any additional setup after loading the view.
-        callListOfMovies()
+        setupNavigationItem()
+        
+        callListOfMovies(withParameters: parameters)
     }
     
-    func callListOfMovies() {
-        WebService.shared.callAPI(endPoint: "/discover/movie", withMethod: .get, forParamters: nil) { (serviceResponse, error) in
-            guard error == nil else {
-                return
+    func setupNavigationItem() {
+        let barBtnReveal = UIBarButtonItem(image: #imageLiteral(resourceName: "sort-descending"), style: .plain, target: self.revealViewController(), action: #selector(self.revealViewController().rightRevealToggle(_:)))
+        navigationItem.rightBarButtonItem = barBtnReveal
+        self.view.addGestureRecognizer(self.revealViewController().panGestureRecognizer())
+        
+        txtSearch = UITextField(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 30))
+        txtSearch.borderStyle = .roundedRect
+        txtSearch.backgroundColor = .white
+        txtSearch.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
+        txtSearch.placeholder = "Search..."
+        setupSearchBar()
+    }
+    
+    func setupSearchBar() {
+        let barBtnSearch = UIBarButtonItem(image: #imageLiteral(resourceName: "search"), style: .plain, target: self, action: #selector(toggleTextField(_:)))
+        navigationItem.rightBarButtonItems?.append(barBtnSearch)
+    }
+    
+    @objc
+    func toggleTextField(_ sender: UIBarButtonItem) {
+        if sender.image == #imageLiteral(resourceName: "search") {
+            navigationItem.titleView = txtSearch
+            sender.image = #imageLiteral(resourceName: "cancel-music")
+        }
+        else {
+            navigationItem.titleView = retainedTitleView
+            sender.image = #imageLiteral(resourceName: "search")
+            parameters["page"] = nil
+            callListOfMovies(withParameters: parameters)
+        }
+    }
+    
+    @objc
+    func textDidChange(_ sender: UITextField) {
+        guard sender.text!.count > 0 else {
+            callListOfMovies(withParameters: parameters)
+            return
+        }
+        let params: [String:Any] = ["page":1,
+                                  "query":sender.text!]
+        WebService.shared.callAPI(endPoint: "/search/movie", withMethod: .get, forParamters: params) { (serviceResponse) in
+            self.listMovies = [MovieEntity]()
+            for eachMovie in serviceResponse["results"] as! [[String:Any]] {
+                self.listMovies.append(MovieEntity(eachMovie))
             }
-            for eachMovie in serviceResponse!["results"] as! [[String:Any]] {
+            self.collectionView?.reloadData()
+        }
+        
+    }
+
+
+    override
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return listMovies.count
+    }
+
+    override
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MoviePosterCVCell", for: indexPath) as! MoviePosterCVCell
+        cell.movieEntity = listMovies[indexPath.row]
+        guard indexPath.row != listMovies.count - 1 else {
+            if let page = parameters["page"] as? Int {
+                parameters["page"] = page + 1
+            }
+            else {
+                parameters["page"] = 2
+            }
+            callListOfMovies(withParameters: parameters)
+            return cell
+        }
+        return cell
+    }
+    
+    override
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let destination = MovieDetailsVC(listMovies[indexPath.row])
+        navigationController?.pushViewController(destination, animated: true)
+    }
+}
+
+
+extension MoviePosterListingCVCtrlr: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: collectionView.frame.width / 2, height: collectionView.frame.width * 16 / 18)
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+}
+
+extension MoviePosterListingCVCtrlr: RefreshMovieListingDelegate {
+    func callListOfMovies(withParameters params: [String:Any?]) {
+        for eachKey in params.keys {
+            parameters[eachKey] = params[eachKey] ?? nil
+        }
+        WebService.shared.callAPI(endPoint: "/discover/movie", withMethod: .get, forParamters: parameters) { (serviceResponse) in
+            if self.parameters["page"] as? Int == nil {
+                self.listMovies = [MovieEntity]()
+            }
+            for eachMovie in serviceResponse["results"] as! [[String:Any]] {
                 self.listMovies.append(MovieEntity(eachMovie))
             }
             self.collectionView?.reloadData()
         }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-    }
-    */
-
-    // MARK: UICollectionViewDataSource
-
-
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of items
-        return listMovies.count
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MoviePosterCVCell", for: indexPath) as! MoviePosterCVCell
-        
-        // Configure the cell
-        cell.movieEntity = listMovies[indexPath.row]
-        return cell
-    }
-
-    // MARK: UICollectionViewDelegate
-
-    /*
-    // Uncomment this method to specify if the specified item should be highlighted during tracking
-    override func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    */
-
-    /*
-    // Uncomment this method to specify if the specified item should be selected
-    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    */
-
-    /*
-    // Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
-    override func collectionView(_ collectionView: UICollectionView, shouldShowMenuForItemAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, canPerformAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, performAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) {
-    
-    }
-    */
-
 }

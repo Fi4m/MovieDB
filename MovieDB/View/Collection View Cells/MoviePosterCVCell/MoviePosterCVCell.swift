@@ -7,13 +7,16 @@
 //
 
 import UIKit
+import Kingfisher
 
 class MoviePosterCVCell: UICollectionViewCell {
 
     @IBOutlet weak var imgMoviePoster: UIImageView!
     var movieEntity: MovieEntity! {
         didSet {
-            
+            if let imageURL = movieEntity.imgPosterURL {
+                imgMoviePoster.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(imageURL)")!)
+            }
         }
     }
     
