@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0A7A176697B27664FB5242F7 /* Pods_MovieDB.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54583261858018192C1BF1EA /* Pods_MovieDB.framework */; };
+		CF2401711FDD7FAE007D181E /* MoviePosterCVCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CF24016F1FDD7FAE007D181E /* MoviePosterCVCell.xib */; };
+		CF2401721FDD7FAE007D181E /* MoviePosterCVCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF2401701FDD7FAE007D181E /* MoviePosterCVCell.swift */; };
 		CF76D68A1FDBD2E3001D867B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF76D6891FDBD2E3001D867B /* AppDelegate.swift */; };
 		CF76D6911FDBD2E3001D867B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF76D6901FDBD2E3001D867B /* Assets.xcassets */; };
 		CF76D6A11FDBD6F6001D867B /* MoviePosterListingCVCtrlr.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF76D6A01FDBD6F6001D867B /* MoviePosterListingCVCtrlr.swift */; };
@@ -22,6 +24,8 @@
 /* Begin PBXFileReference section */
 		54583261858018192C1BF1EA /* Pods_MovieDB.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MovieDB.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C560417D81E6BDCF07AC0B8B /* Pods-MovieDB.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MovieDB.release.xcconfig"; path = "Pods/Target Support Files/Pods-MovieDB/Pods-MovieDB.release.xcconfig"; sourceTree = "<group>"; };
+		CF24016F1FDD7FAE007D181E /* MoviePosterCVCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MoviePosterCVCell.xib; sourceTree = "<group>"; };
+		CF2401701FDD7FAE007D181E /* MoviePosterCVCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoviePosterCVCell.swift; sourceTree = "<group>"; };
 		CF76D6861FDBD2E3001D867B /* MovieDB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MovieDB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF76D6891FDBD2E3001D867B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CF76D6901FDBD2E3001D867B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -63,6 +67,23 @@
 				C560417D81E6BDCF07AC0B8B /* Pods-MovieDB.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		CF2401691FDD7F5A007D181E /* Collection View Cells */ = {
+			isa = PBXGroup;
+			children = (
+				CF24016A1FDD7F6C007D181E /* MoviePosterCVCell */,
+			);
+			path = "Collection View Cells";
+			sourceTree = "<group>";
+		};
+		CF24016A1FDD7F6C007D181E /* MoviePosterCVCell */ = {
+			isa = PBXGroup;
+			children = (
+				CF2401701FDD7FAE007D181E /* MoviePosterCVCell.swift */,
+				CF24016F1FDD7FAE007D181E /* MoviePosterCVCell.xib */,
+			);
+			path = MoviePosterCVCell;
 			sourceTree = "<group>";
 		};
 		CF76D67D1FDBD2E3001D867B = {
@@ -107,6 +128,7 @@
 		CF76D69C1FDBD620001D867B /* View */ = {
 			isa = PBXGroup;
 			children = (
+				CF2401691FDD7F5A007D181E /* Collection View Cells */,
 				CF76D6A41FDBD7F3001D867B /* LaunchScreen.storyboard */,
 			);
 			path = View;
@@ -210,6 +232,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF2401711FDD7FAE007D181E /* MoviePosterCVCell.xib in Resources */,
 				CF76D6A51FDBD7F3001D867B /* LaunchScreen.storyboard in Resources */,
 				CF76D6BB1FDC2873001D867B /* MovieDetailsVC.xib in Resources */,
 				CF76D6911FDBD2E3001D867B /* Assets.xcassets in Resources */,
@@ -289,6 +312,7 @@
 				CF76D68A1FDBD2E3001D867B /* AppDelegate.swift in Sources */,
 				CF76D6BA1FDC2873001D867B /* MovieDetailsVC.swift in Sources */,
 				CF76D6A11FDBD6F6001D867B /* MoviePosterListingCVCtrlr.swift in Sources */,
+				CF2401721FDD7FAE007D181E /* MoviePosterCVCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +433,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "$(SRCROOT)/MovieDB/Application Skeleton/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = dev.Vedant.MovieDB;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -424,6 +449,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "$(SRCROOT)/MovieDB/Application Skeleton/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = dev.Vedant.MovieDB;
 				PRODUCT_NAME = "$(TARGET_NAME)";

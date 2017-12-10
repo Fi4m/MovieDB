@@ -8,6 +8,7 @@
 
 import Foundation
 
+//no need of protocol as only one data object required for assessment
 //protocol DataObjectsInitializer {
 //    init(_ dict: [String:Any])
 //}

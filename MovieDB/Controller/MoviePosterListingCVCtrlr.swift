@@ -9,6 +9,7 @@
 import UIKit
 import SWRevealViewController
 import Kingfisher
+import MBProgressHUD
 
 // MARK: - Declaring Sorting Protocol
 protocol RefreshMovieListingDelegate {
@@ -44,12 +45,18 @@ class MoviePosterListingCVCtrlr: UICollectionViewController {
         navigationItem.title = "MovieDB"
         
         //register nib for reuse in collection view
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "UICollectionViewCell")
+        
+        setupCollectionView()
+        setupNavigationItem()
+        parameters = [String:Any]()
+    }
+    
+    func setupCollectionView() {
+        collectionView?.backgroundColor = .black
+        collectionView?.register(UINib(nibName: "MoviePosterCVCell", bundle: nil), forCellWithReuseIdentifier: "MoviePosterCVCell")
         collectionView?.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "FooterView")
         collectionView?.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "HeaderView")
         collectionView?.backgroundColor = .white
-        setupNavigationItem()
-        parameters = [String:Any]()
     }
     
     /*
@@ -75,14 +82,10 @@ class MoviePosterListingCVCtrlr: UICollectionViewController {
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "UICollectionViewCell", for: indexPath)
-        guard cell.subviews.count != 0 else {
-            return cell
-        }
-        let imgMoviePoster = UIImageView(frame: cell.bounds)
-        imgMoviePoster.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        cell.addSubview(imgMoviePoster)
-        imgMoviePoster.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(listMovies[indexPath.row].imgPosterURL)")!)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MoviePosterCVCell", for: indexPath) as! MoviePosterCVCell
+        
+        cell.movieEntity = listMovies[indexPath.row]
+        
         return cell
     }
     
@@ -95,10 +98,14 @@ class MoviePosterListingCVCtrlr: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         
         let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "FooterView", for: indexPath)
-        footerView.backgroundColor = .black
         footerView.frame.size.height = 124
+        
+        //only add activity indicator the first time footer view is called and enable pagination from the second time
         guard footerView.subviews.count == 0 else {
-            
+            //stop pagination of list of movies is empty
+            guard listMovies.count > 0 else {
+                return footerView
+            }
             //enable pagination when footer is called on the second time
             if moviePosterListingType == .discover {
                 if let page = parameters["page"] as? Int {
@@ -113,8 +120,9 @@ class MoviePosterListingCVCtrlr: UICollectionViewController {
             }
             return footerView
         }
-        let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
-        activityIndicator.frame.origin = CGPoint(x: footerView.bounds.width/2 - activityIndicator.bounds.width/2, y: footerView.bounds.height/2 - activityIndicator.bounds.height/2)
+        //add activity indicator for the first time
+        let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        activityIndicator.center = footerView.center
         activityIndicator.startAnimating()
         footerView.addSubview(activityIndicator)
         return footerView
@@ -135,24 +143,45 @@ class MoviePosterListingCVCtrlr: UICollectionViewController {
         if parameters["page"] == nil || parameters["page"] as! Int == 1 {
             self.listMovies = [MovieEntity]()
         }
-        var indexPaths = [IndexPath]()
-        for (index,eachMovie) in dictArray.enumerated() {
-            self.listMovies.append(MovieEntity(eachMovie))
-            indexPaths.append(IndexPath(item: index, section: 0))
+        let footerView = collectionView!.supplementaryView(forElementKind: UICollectionElementKindSectionFooter, at: IndexPath(item: 0, section: 0))
+        // add no data found label else activity indicator for pagination
+        if dictArray.count == 0 {
+            if (footerView?.subviews.first as? UIActivityIndicatorView) != nil {
+                footerView?.removeAllSubviews()
+                let noDataLabel = UILabel()
+                noDataLabel.text = "No Data Found!"
+                noDataLabel.sizeToFit()
+                noDataLabel.center = footerView!.center
+                footerView!.addSubview(noDataLabel)
+                return
+            }
         }
-        
+        else {
+            for eachMovie in dictArray {
+                self.listMovies.append(MovieEntity(eachMovie))
+            }
+            if (footerView?.subviews.first as? UILabel) != nil {
+                footerView?.removeAllSubviews()
+                let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+                activityIndicator.center = footerView!.center
+                activityIndicator.startAnimating()
+                footerView!.addSubview(activityIndicator)
+            }
+        }
         //performBatchUpdates was producing wierd animations
 //        collectionView?.performBatchUpdates({
 //            collectionView?.insertItems(at: indexPaths)
 //        }, completion: nil)
         collectionView?.reloadData()
     }
+    
 }
 
 extension MoviePosterListingCVCtrlr: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.bounds.width / 2, height: collectionView.bounds.width * 16 / 18)
+        return CGSize(width: collectionView.bounds.width / 2, height: collectionView.bounds.width/2 * (3/2))
+        //poster images downloaded are majorly in the aspect ratio 3/2
     }
     
     
@@ -193,6 +222,14 @@ extension MoviePosterListingCVCtrlr: UISearchResultsUpdating {
     func callSearchResults() {
         WebService.shared.callAPI(endPoint: .search, withMethod: .get, forParamters: parameters) { (serviceResponse) in
             self.populateArrayAndReloadData(serviceResponse["results"] as! [[String:Any]])
+        }
+    }
+}
+
+extension UIView {
+    func removeAllSubviews() {
+        for eachSubview in subviews {
+            eachSubview.removeFromSuperview()
         }
     }
 }

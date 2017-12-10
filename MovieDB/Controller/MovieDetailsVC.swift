@@ -12,6 +12,7 @@ import HCSStarRatingView
 class MovieDetailsVC: UIViewController {
     
     let movieEntity: MovieEntity
+    @IBOutlet weak var imgBackground: UIImageView!
     @IBOutlet weak var imgMoviePoster: UIImageView!
     @IBOutlet weak var lblMovieTitle: UILabel!
     @IBOutlet weak var lblMovieDescription: UILabel!
@@ -30,7 +31,9 @@ class MovieDetailsVC: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        imgMoviePoster.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(movieEntity.imgBackdrop)")!)
+        
+        imgBackground.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(movieEntity.imgPosterURL)")!)
+        imgMoviePoster.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(movieEntity.imgBackdrop)")!, placeholder: #imageLiteral(resourceName: "NoImageFound"), options: nil, progressBlock: nil, completionHandler: nil)
         
         let attributedTitle = NSMutableAttributedString(string: movieEntity.title, attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 20)])
         let dateFormatter = DateFormatter()
@@ -39,15 +42,11 @@ class MovieDetailsVC: UIViewController {
             attributedTitle.append(NSAttributedString(string: "\n\(dateFormatter.string(from: date))", attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 14)]))
         }
         lblMovieTitle.attributedText = attributedTitle
-        lblMovieDescription.text = movieEntity.description
         
-        setupRatings()
-    }
-    
-    func setupRatings() {
-        viewMovieRating.maximumValue = 10
-        viewMovieRating.minimumValue = 0
-        viewMovieRating.allowsHalfStars = true
+        // display overview if present otherwise display placeholder
+        lblMovieDescription.text = movieEntity.description.isEmpty ? "No overview found." : movieEntity.description
+        
+        //view movie rating
         viewMovieRating.value = CGFloat(movieEntity.userRating)
     }
 

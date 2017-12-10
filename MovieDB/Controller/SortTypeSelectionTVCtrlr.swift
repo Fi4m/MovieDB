@@ -13,30 +13,33 @@ class SortTypeSelectionTVCtrlr: UIViewController {
     var tableView: UITableView!
     
     //Sorting options provided by MovieDB
-    private let sortingOptions = ["popularity.asc",
-                                  "popularity.desc",
-                                  "release_date.asc",
+    private let sortingOptions = ["popularity.desc",
+                                  "popularity.asc",
                                   "release_date.desc",
-                                  "revenue.asc",
+                                  "release_date.asc",
                                   "revenue.desc",
-                                  "primary_release_date.asc",
+                                  "revenue.asc",
                                   "primary_release_date.desc",
-                                  "original_title.asc",
+                                  "primary_release_date.asc",
                                   "original_title.desc",
-                                  "vote_average.asc",
+                                  "original_title.asc",
                                   "vote_average.desc",
-                                  "vote_count.asc",
-                                  "vote_count.desc"]
+                                  "vote_average.asc",
+                                  "vote_count.desc",
+                                  "vote_count.asc"]
     
-    
+    //sorting delegate
     var refreshMovieListingDelegate: RefreshMovieListingDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSortingOptionsTableView()
+        //popularity.desc is the default sorting method so displaying selected from default
+        tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .top)
     }
     
     func setupSortingOptionsTableView() {
+        //260 is the default value of viewController revealed in SWRevealViewController, hence the width 260
         tableView = UITableView(frame: CGRect(x: view.bounds.width - 260, y: 0, width: 260, height: view.bounds.height), style: .plain)
         tableView.autoresizingMask = [.flexibleLeftMargin,.flexibleHeight]
         view.addSubview(tableView)
@@ -72,6 +75,7 @@ extension SortTypeSelectionTVCtrlr: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.revealViewController().revealToggle(animated: true)
+        //sorting delegate called
         refreshMovieListingDelegate?.refreshMovieListing(withParameters: ["sort_by":sortingOptions[indexPath.row]])
     }
 }
