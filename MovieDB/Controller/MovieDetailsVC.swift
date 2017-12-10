@@ -7,10 +7,15 @@
 //
 
 import UIKit
+import HCSStarRatingView
 
 class MovieDetailsVC: UIViewController {
     
     let movieEntity: MovieEntity
+    @IBOutlet weak var imgMoviePoster: UIImageView!
+    @IBOutlet weak var lblMovieTitle: UILabel!
+    @IBOutlet weak var lblMovieDescription: UILabel!
+    @IBOutlet weak var viewMovieRating: HCSStarRatingView!
     
     init(_ movie: MovieEntity) {
         movieEntity = movie
@@ -25,22 +30,35 @@ class MovieDetailsVC: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        imgMoviePoster.kf.setImage(with: URL(string: "https://image.tmdb.org/t/p/w500/\(movieEntity.imgBackdrop)")!)
+        
+        let attributedTitle = NSMutableAttributedString(string: movieEntity.title, attributes: [NSAttributedStringKey.font: UIFont.boldSystemFont(ofSize: 20)])
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MMM-yyyy"
+        if let date = movieEntity.releaseDate  {
+            attributedTitle.append(NSAttributedString(string: "\n\(dateFormatter.string(from: date))", attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 14)]))
+        }
+        lblMovieTitle.attributedText = attributedTitle
+        lblMovieDescription.text = movieEntity.description
+        
+        setupRatings()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    func setupRatings() {
+        viewMovieRating.maximumValue = 10
+        viewMovieRating.minimumValue = 0
+        viewMovieRating.allowsHalfStars = true
+        viewMovieRating.value = CGFloat(movieEntity.userRating)
     }
-    */
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
+    }
 
 }

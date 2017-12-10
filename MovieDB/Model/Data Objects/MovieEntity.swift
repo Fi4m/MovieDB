@@ -8,22 +8,24 @@
 
 import Foundation
 
-protocol DataObjectsInitializer {
-    init(_ dict: [String:Any])
-}
+//protocol DataObjectsInitializer {
+//    init(_ dict: [String:Any])
+//}
 
-struct MovieEntity: DataObjectsInitializer {
+struct MovieEntity {//: DataObjectsInitializer {
     
     let title: String
     let description: String
-    let imgPosterURL: String?
+    let imgPosterURL: String
+    let imgBackdrop: String
     let userRating: Double
     let releaseDate: Date?
     
     init(_ dict: [String:Any]) {
         title = dict["original_title"] as! String
         description = dict["overview"] as! String
-        imgPosterURL = dict["poster_path"] as? String
+        imgPosterURL = dict["poster_path"] as? String ?? ""
+        imgBackdrop = dict["backdrop_path"] as? String ?? ""
         userRating = dict["vote_average"] as! Double
         
         let dateFormatter = DateFormatter()

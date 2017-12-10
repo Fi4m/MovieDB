@@ -23,6 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let revealViewController = SWRevealViewController()
         let moviePosterListingCVCtrlr = MoviePosterListingCVCtrlr(collectionViewLayout: UICollectionViewFlowLayout())
         let navigationController = UINavigationController(rootViewController: moviePosterListingCVCtrlr)
+        navigationController.navigationBar.barTintColor = .white
         navigationController.navigationBar.tintColor = .black
         navigationController.navigationBar.prefersLargeTitles = true
         navigationController.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.black]

@@ -17,16 +17,27 @@ enum HTTPMethod: String {
     case post = "POST"
 }
 
+enum Endpoint: String {
+    case discover = "/discover/movie"
+    case search = "/search/movie"
+}
+
 class WebService {
     
+    //singleton for webservice calls
     static let shared = WebService()
+    
+    //base URL for MovieDB
     private let baseURL = "https://api.themoviedb.org/3"
     private let session = URLSession(configuration: .default)
-    private let apiKey = "08d02e50f177c47452bade3210abd446"
-    fileprivate var progressHUD: MBProgressHUD!
-    var dataTask: URLSessionDataTask!
     
-    func callAPI(endPoint apiExtension: String, withMethod method: HTTPMethod, forParamters parameters: [String:Any]?, actionWithResponseData completionHandler: @escaping CompletionHandler) {
+    //apiKey required for MovieDB data access
+    private let apiKey = "08d02e50f177c47452bade3210abd446"
+    
+    //activity indicator for service calls and block UI for user
+    fileprivate var progressHUD: MBProgressHUD!
+    
+    func callAPI(endPoint api: Endpoint, withMethod method: HTTPMethod, forParamters parameters: [String:Any], actionWithResponseData completionHandler: @escaping CompletionHandler) {
         
         guard checkForNetworkConnectivity() else {
             MovieDBAlertController.shared.presentAlertController(title: "Connection Problem", message: "Please check your internet connection !", completionHandler: nil)
@@ -35,43 +46,47 @@ class WebService {
         var request: URLRequest!
         if method == .post {
             showHUD()
-            request = URLRequest(url: URL(string: "\(baseURL)\(apiExtension)?api_key=\(apiKey)")!)
-            request.httpBody = try! JSONSerialization.data(withJSONObject: parameters!, options: .prettyPrinted)
+            request = URLRequest(url: URL(string: "\(baseURL)\(api.rawValue)?api_key=\(apiKey)")!)
+            request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
         }
         else {
-            if let params = parameters {
-                if params["page"] != nil {
-                    UIApplication.shared.isNetworkActivityIndicatorVisible = true
-                }
-                else {
-                    showHUD()
-                }
-                var urlString = "\(baseURL)\(apiExtension)?api_key=\(apiKey)"
-                for eachKey in params.keys {
-                    urlString.append("&\(eachKey)=\(params[eachKey]!)")
-                }
-                request = URLRequest(url: URL(string: urlString.replacingOccurrences(of: " ", with: "%20"))!)
+            // check for pagination so that the UI does not get blocked
+            if parameters["page"] != nil {
+                UIApplication.shared.isNetworkActivityIndicatorVisible = true
             }
             else {
-                request = URLRequest(url: URL(string: "\(baseURL)\(apiExtension)?api_key=\(apiKey)")!)
+                showHUD()
             }
+            var urlString = "\(baseURL)\(api.rawValue)?api_key=\(apiKey)"
+            for eachKey in parameters.keys {
+                urlString.append("&\(eachKey)=\(parameters[eachKey]!)")
+            }
+            request = URLRequest(url: URL(string: urlString.replacingOccurrences(of: " ", with: "%20"))!)
             
         }
         request.httpMethod = method.rawValue
         
-        dataTask?.cancel()
-        dataTask = session.dataTask(with: request) { (data, response, error) in
+        
+        let dataTask = session.dataTask(with: request) { (data, response, error) in
             DispatchQueue.main.async {
                 self.progressHUD.hide(animated: true)
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
                 guard error == nil else {
-//                    MovieDBAlertController.shared.presentAlertController(title: "MovieDB", message: error!.localizedDescription, completionHandler: nil)
+                    MovieDBAlertController.shared.presentAlertController(title: "MovieDB", message: error!.localizedDescription, completionHandler: nil)
                     return
                 }
                 do {
+                    
                     let responseData = try JSONSerialization.jsonObject(with: data!, options:JSONSerialization.ReadingOptions.allowFragments) as! [String:Any]
                     print(responseData)
-                    completionHandler(responseData)
+                    print((response as! HTTPURLResponse).allHeaderFields.keys)
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                        completionHandler(responseData)
+                    }
+                    else {
+                        MovieDBAlertController.shared.presentAlertController(title: "MovieDB", message: responseData["status_message"] as! String, completionHandler: nil)
+                    }
+                    
                 }
                 catch {
                     MovieDBAlertController.shared.presentAlertController(title: "MovieDB", message: error.localizedDescription, completionHandler: nil)
@@ -143,6 +158,7 @@ extension WebService {
     }
 }
 
+//MARK: singleton for error displaying through alerts
 class MovieDBAlertController: UIAlertController {
     
     static let shared = MovieDBAlertController(title: "ALIST", message: nil, preferredStyle: .alert)
