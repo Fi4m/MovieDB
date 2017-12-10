@@ -7,15 +7,39 @@
 //
 
 import UIKit
+import SWRevealViewController
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        /*
+         Did not use storyboard because needed to assign the sorting delegate MoviePosterListingCVCtrlr to SortTypeSelectionTVCtrlr which was only possible tweaking the SWRevealViewController pod if done via storyboard.
+         Rather than tweaking the library, chose to initialize the base of the app programmatically where assigning the delegate is simpler.
+         */
+        
+        window = UIWindow()
+        
+        let revealViewController = SWRevealViewController()
+        let moviePosterListingCVCtrlr = MoviePosterListingCVCtrlr(collectionViewLayout: UICollectionViewFlowLayout())
+        let navigationController = UINavigationController(rootViewController: moviePosterListingCVCtrlr)
+        navigationController.navigationBar.barTintColor = .white
+        navigationController.navigationBar.tintColor = .black
+        navigationController.navigationBar.prefersLargeTitles = true
+        navigationController.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.black]
+        revealViewController.setFront(navigationController, animated: false)
+        let sortTypeTVCrtlr = SortTypeSelectionTVCtrlr()
+        
+        //assign sorting delegate
+        sortTypeTVCrtlr.refreshMovieListingDelegate = moviePosterListingCVCtrlr
+        revealViewController.setRight(sortTypeTVCrtlr, animated: false)
+        window?.rootViewController = revealViewController
+        window?.makeKeyAndVisible()
+        
         return true
     }
 
