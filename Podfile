@@ -8,7 +8,7 @@ target 'MovieDB' do
 	pod 'MBProgressHUD'
 	pod 'Kingfisher'
 	pod 'SWRevealViewController'
-    pod 'HCSStarRatingView'
+    	pod 'HCSStarRatingView'
 
   # Pods for MovieDB
 
